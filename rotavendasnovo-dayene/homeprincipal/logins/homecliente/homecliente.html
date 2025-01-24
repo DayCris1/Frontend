@@ -3,322 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Requisições</title>
+    <title>Gestão de Requisições</title>
     <style>
         body {
             margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f7f9fc;
-            color: #2c3e50;
-            overflow: hidden;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
         }
-
-        .sidebar {
-            background-color: #34495e;
-            color: #ecf0f1;
-            width: 250px;
+        .menu-lateral {
+            width: 260px;
+            background: linear-gradient(145deg, #14213d, #1d3557);
             height: 100vh;
             position: fixed;
-            top: 0;
-            left: 0;
+            color: #fff;
             display: flex;
             flex-direction: column;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            align-items: center;
+            padding-top: 20px;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
         }
-
-        .sidebar button {
-            background: none;
-            border: none;
-            color: inherit;
+        .menu-lateral button {
+            background-color: transparent;
+            color: white;
+            border: 2px solid #fff;
+            border-radius: 5px;
             padding: 15px 20px;
-            text-align: left;
+            width: 90%;
+            margin: 10px 0;
             font-size: 16px;
             cursor: pointer;
-            border-bottom: 1px solid #3d566e;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
         }
-
-        .sidebar button:hover {
-            background-color: #3d566e;
+        .menu-lateral button:hover {
+            background-color: #0077b6;
+            transform: scale(1.05);
         }
-
-        .content {
-            margin-left: 250px;
+        .conteudo {
+            margin-left: 260px;
             padding: 20px;
-            background-color: transparent;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            z-index: 2;
         }
-
-        .background-image {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
-
-        .background-image iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        .popup {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-            text-align: center;
+        .modal {
             display: none;
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1000;
-            width: 90%;
-            max-width: 500px;
-        }
-
-        .popup textarea {
+            top: 0;
+            left: 0;
             width: 100%;
-            height: 100px;
-            margin-top: 10px;
-            border: 1px solid #dcdfe3;
-            border-radius: 8px;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-conteudo {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            width: 400px;
+            text-align: center;
+        }
+        select, textarea, button {
+            width: 100%;
+            margin: 10px 0;
             padding: 10px;
-            font-size: 14px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        textarea {
             resize: none;
         }
-
-        .status {
-            font-weight: bold;
-            font-style: italic;
-        }
-
-        .yellow { color: #f1c40f; }
-        .green { color: #2ecc71; }
-        .red { color: #e74c3c; }
-
-        .button-primary {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: background-color 0.3s;
-        }
-
-        .button-primary:hover {
-            background-color: #2980b9;
-        }
-
-        .dropdown {
-            margin-top: 20px;
-        }
-
-        .dropdown select {
-            width: 100%;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #dcdfe3;
-            border-radius: 8px;
-            background-color: #ffffff;
-        }
-
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            z-index: 999;
-        }
-
-        h2, h3 {
-            color: #2c3e50;
-        }
-
-        button {
-            outline: none;
-        }
-
-        textarea:focus, select:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
-            outline: none;
-        }
+        .status-andamento { color: yellow; font-weight: bold; font-style: italic; }
+        .status-concluido { color: green; font-weight: bold; font-style: italic; }
+        .status-reprovado { color: red; font-weight: bold; font-style: italic; }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <button onclick="openPopup('novaRequisicaoPopup')">Nova Requisição</button>
-        <button onclick="openPopup('consultaRequisicaoPopup')">Consulte Aqui sua Requisição</button>
-        <button onclick="openPopup('statusRequisicaoPopup')">Status da Requisição</button>
-        <button onclick="window.location.reload()">Sair</button>
+    <div class="menu-lateral">
+        <button onclick="novaRequisicao()">Nova Requisição</button>
+        <button onclick="consultarRequisicao()">Consultar Requisição</button>
+        <button onclick="statusRequisicao()">Status da Requisição</button>
+        <button onclick="sair()">Sair</button>
     </div>
 
-    <div class="content">
-        <div class="background-image">
-            <iframe loading="lazy" src="https://www.canva.com/design/DAGc4XzY-HE/49D-bPq0P1Mq3j-KyhxZVw/view?embed" allowfullscreen="allowfullscreen" allow="fullscreen"></iframe>
-        </div>
-        <div id="novaRequisicaoPopup" class="popup">
-            <h2>Qual o seu setor?</h2>
-            <div class="dropdown">
-                <select id="setorInicialSelect" onchange="handleSetorInicialChange()">
+    <div class="conteudo">
+        <h1>Bem-vindo ao Sistema de Gestão de Requisições</h1>
+    </div>
+
+    <div class="modal" id="modal-nova">
+        <div class="modal-conteudo">
+            <h2>Nova Requisição</h2>
+            <button id="btn-setor" onclick="abrirSetor()">Qual o seu setor?</button>
+            <div id="opcoes-setor" style="display: none;">
+                <select id="setor" onchange="mostrarTipoRequisicao()">
                     <option value="">Selecione o setor...</option>
-                    <option value="Setor 1">Setor 1</option>
-                    <option value="Setor 2">Setor 2</option>
-                    <option value="Setor 3">Setor 3</option>
+                    <option value="Administrativo">Administrativo</option>
+                    <option value="Secretaria">Secretaria</option>
+                    <option value="Comercial">Comercial</option>
+                    <option value="Estoque">Estoque</option>
                 </select>
-            </div>
-            <div id="tipoRequisicao" style="display:none; margin-top: 10px;">
-                <h3>Selecione o tipo de solicitação:</h3>
-                <div class="dropdown">
-                    <select id="tipoRequisicaoSelect" onchange="handleTipoRequisicaoChange()">
-                        <option value="">Selecione...</option>
+                <div id="opcoes-tipo" style="display: none;">
+                    <select id="tipo-requisicao" onchange="mostrarFormulario()">
+                        <option value="">Selecione o tipo de requisição...</option>
                         <option value="Produto">Produto</option>
-                        <option value="Servico">Serviço</option>
+                        <option value="Serviço">Serviço</option>
                     </select>
+                    <div id="formulario-produto" style="display: none;">
+                        <textarea id="descricao-produto" placeholder="Descreva os produtos necessários"></textarea>
+                        <button onclick="enviarRequisicao('Produto')">Enviar Requisição</button>
+                    </div>
+                    <div id="formulario-servico" style="display: none;">
+                        <select id="tipo-servico" onchange="habilitarDescricaoServico()">
+                            <option value="">Selecione o tipo de serviço</option>
+                            <option value="Elétrica">Elétrica</option>
+                            <option value="Mecânico">Mecânico</option>
+                            <option value="Alvenaria">Alvenaria</option>
+                            <option value="Hidráulico">Hidráulico</option>
+                            <option value="Pintura">Pintura</option>
+                            <option value="Jardinagem e Paisagismo">Jardinagem e Paisagismo</option>
+                            <option value="Limpeza e Conservação">Limpeza e Conservação</option>
+                            <option value="Mobiliário">Mobiliário</option>
+                        </select>
+                        <textarea id="descricao-servico" placeholder="Descreva o serviço necessário" disabled></textarea>
+                        <button id="btn-enviar-servico" onclick="enviarRequisicao('Serviço')" disabled>Enviar Requisição</button>
+                    </div>
                 </div>
             </div>
-            <div id="produtoForm" style="display:none;">
-                <textarea id="produtoDescricao" placeholder="Descreva os produtos necessários"></textarea>
-                <button class="button-primary" onclick="enviarRequisicao('Produto')">Enviar Requisição</button>
-            </div>
-            <div id="servicoForm" style="display:none;">
-                <div class="dropdown">
-                    <select id="servicoSelect">
-                        <option value="">Selecione...</option>
-                        <option value="Elétrica">Elétrica</option>
-                        <option value="Mecânico">Mecânico</option>
-                        <option value="Alvenaria">Alvenaria</option>
-                        <option value="Hidráulico">Hidráulico</option>
-                        <option value="Pintura">Pintura</option>
-                        <option value="Jardinagem e Paisagismo">Jardinagem e Paisagismo</option>
-                        <option value="Limpeza e Conservação">Limpeza e Conservação</option>
-                        <option value="Mobiliário">Mobiliário</option>
-                    </select>
-                </div>
-                <textarea id="servicoDescricao" placeholder="Descreva o serviço necessário"></textarea>
-                <button class="button-primary" onclick="enviarRequisicao('Serviço')">Enviar Requisição</button>
-            </div>
-        </div>
-
-        <div id="consultaRequisicaoPopup" class="popup">
-            <h2>Aqui está seu histórico de solicitação:</h2>
-            <div id="historico"></div>
-        </div>
-
-        <div id="statusRequisicaoPopup" class="popup">
-            <h2>Confira o andamento da sua solicitação:</h2>
-            <div id="status"></div>
         </div>
     </div>
 
-    <div class="overlay" id="overlay"></div>
+    <div class="modal" id="modal-consulta">
+        <div class="modal-conteudo">
+            <h2>Aqui está seu histórico de solicitação:</h2>
+            <button id="numero-requisicao" onclick="mostrarDetalhes()"></button>
+            <div id="detalhes-requisicao" style="display: none;"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-status">
+        <div class="modal-conteudo">
+            <h2>Confira o andamento da sua solicitação:</h2>
+            <div id="status-requisicao"></div>
+        </div>
+    </div>
 
     <script>
-        const requisicoes = [];
+        let ultimaRequisicao = null;
 
-        function openPopup(popupId) {
-            document.querySelectorAll('.popup').forEach(popup => popup.style.display = 'none');
-            document.getElementById(popupId).style.display = 'block';
-            document.getElementById('overlay').style.display = 'block';
-
-            // Chama a função renderStatus() se o popup de status for aberto
-            if (popupId === 'statusRequisicaoPopup') {
-                renderStatus();
-            }
-        }
-
-        document.getElementById('overlay').addEventListener('click', () => {
-            document.querySelectorAll('.popup').forEach(popup => popup.style.display = 'none');
-            document.getElementById('overlay').style.display = 'none';
-        });
-
-        function handleSetorInicialChange() {
-            const setor = document.getElementById('setorInicialSelect').value;
-            const tipoRequisicaoDiv = document.getElementById('tipoRequisicao');
-            if (setor) {
-                tipoRequisicaoDiv.style.display = 'block';
-            } else {
-                tipoRequisicaoDiv.style.display = 'none';
-                resetForms();
-            }
-        }
-
-        function handleTipoRequisicaoChange() {
-            const tipo = document.getElementById('tipoRequisicaoSelect').value;
-            document.getElementById('produtoForm').style.display = tipo === 'Produto' ? 'block' : 'none';
-            document.getElementById('servicoForm').style.display = tipo === 'Servico' ? 'block' : 'none';
-        }
-
-        function resetForms() {
-            document.getElementById('tipoRequisicaoSelect').value = '';
-            document.getElementById('produtoForm').style.display = 'none';
-            document.getElementById('servicoForm').style.display = 'none';
-        }
-
-        function gerarIdRequisicao() {
+        function gerarNumeroRequisicao() {
             return Math.floor(10000 + Math.random() * 90000);
         }
 
-        function enviarRequisicao(tipo) {
-            const id = gerarIdRequisicao();
-            let descricao;
+        function novaRequisicao() {
+            document.getElementById('modal-nova').style.display = 'flex';
+        }
 
-            if (tipo === 'Produto') {
-                descricao = document.getElementById('produtoDescricao').value;
-            } else if (tipo === 'Serviço') {
-                descricao = `${document.getElementById('servicoSelect').value}: ${document.getElementById('servicoDescricao').value}`;
+        function abrirSetor() {
+            document.getElementById('opcoes-setor').style.display = 'block';
+        }
+
+        function mostrarTipoRequisicao() {
+            const setor = document.getElementById('setor').value;
+            if (setor) {
+                document.getElementById('opcoes-tipo').style.display = 'block';
+            }
+        }
+
+        function mostrarFormulario() {
+            const tipo = document.getElementById('tipo-requisicao').value;
+            document.getElementById('formulario-produto').style.display = tipo === 'Produto' ? 'block' : 'none';
+            document.getElementById('formulario-servico').style.display = tipo === 'Serviço' ? 'block' : 'none';
+        }
+
+        function habilitarDescricaoServico() {
+            const tipoServico = document.getElementById('tipo-servico').value;
+            const descricaoServico = document.getElementById('descricao-servico');
+            const btnEnviar = document.getElementById('btn-enviar-servico');
+
+            if (tipoServico) {
+                descricaoServico.disabled = false;
+                btnEnviar.disabled = false;
+            } else {
+                descricaoServico.disabled = true;
+                btnEnviar.disabled = true;
+            }
+        }
+
+        function enviarRequisicao(tipo) {
+            const descricao = tipo === 'Produto' 
+                ? document.getElementById('descricao-produto').value 
+                : document.getElementById('descricao-servico').value;
+            const setor = document.getElementById('setor').value;
+            const tipoEspecifico = tipo === 'Serviço' 
+                ? document.getElementById('tipo-servico').value 
+                : null;
+
+            ultimaRequisicao = {
+                numero: gerarNumeroRequisicao(),
+                tipo: tipo,
+                setor: setor,
+                tipoEspecifico: tipoEspecifico,
+                descricao: descricao
+            };
+
+            alert(`Requisição de ${tipo} enviada com sucesso! Número: ${ultimaRequisicao.numero}`);
+            document.getElementById('modal-nova').style.display = 'none';
+        }
+
+        function consultarRequisicao() {
+            if (!ultimaRequisicao) {
+                alert('Não há requisições recentes.');
+                return;
             }
 
-            requisicoes.push({ id, descricao, status: 'em andamento' });
-            alert(`Requisição enviada! Número: ${id}`);
-            openPopup('consultaRequisicaoPopup');
-            renderHistorico();
+            const modalConsulta = document.getElementById('modal-consulta');
+            const btnNumeroRequisicao = document.getElementById('numero-requisicao');
+            
+            btnNumeroRequisicao.textContent = ultimaRequisicao.numero;
+            modalConsulta.style.display = 'flex';
         }
 
-        function renderHistorico() {
-            const historico = document.getElementById('historico');
-            historico.innerHTML = '';
-            requisicoes.forEach(req => {
-                const btn = document.createElement('button');
-                btn.innerText = req.id;
-                btn.onclick = () => {
-                    const descricao = document.createElement('p');
-                    descricao.innerText = req.descricao;
-                    historico.appendChild(descricao);
-                };
-                historico.appendChild(btn);
-            });
+        function mostrarDetalhes() {
+            const detalhesRequisicao = document.getElementById('detalhes-requisicao');
+            detalhesRequisicao.innerHTML = `
+                <p>Tipo: ${ultimaRequisicao.tipo}</p>
+                <p>Setor: ${ultimaRequisicao.setor}</p>
+                ${ultimaRequisicao.tipoEspecifico ? `<p>Tipo de Serviço: ${ultimaRequisicao.tipoEspecifico}</p>` : ''}
+                <p>Descrição: ${ultimaRequisicao.descricao}</p>
+            `;
+            detalhesRequisicao.style.display = 'block';
         }
 
-        function renderStatus() {
-            const statusDiv = document.getElementById('status');
-            statusDiv.innerHTML = '';
-            requisicoes.forEach(req => {
-                const statusText = document.createElement('p');
-                statusText.innerHTML = `${req.id}: <span class="status ${req.status === 'em andamento' ? 'yellow' : req.status === 'concluído' ? 'green' : 'red'}">${req.status}</span>`;
-                statusDiv.appendChild(statusText);
-            });
+        function statusRequisicao() {
+            if (!ultimaRequisicao) {
+                alert('Não há requisições recentes.');
+                return;
+            }
+
+            const statusRequisicao = document.getElementById('status-requisicao');
+            const status = ['andamento', 'concluido', 'reprovado'][Math.floor(Math.random() * 3)];
+
+            statusRequisicao.innerHTML = `
+                Número: ${ultimaRequisicao.numero} 
+                <span class="status-${status}">
+                    ${status.charAt(0).toUpperCase() + status.slice(1)}
+                </span>
+            `;
+            document.getElementById('modal-status').style.display = 'flex';
         }
+
+        function sair() {
+            window.location.href = '/'; // Volta para página principal
+        }
+
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let modal of modals) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        };
     </script>
 </body>
 </html>
-
-
