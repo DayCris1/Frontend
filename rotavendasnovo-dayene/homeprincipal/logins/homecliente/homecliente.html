@@ -1,143 +1,324 @@
-<!DOCTYPE html> 
-<html lang="pt-br">
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="stylehomecliente.css">
-    <script src="scriptprincipal.js" defer></script>
-    <link rel="icon" type="image/x-icon" href="bola.png">
-    <!-- Adicione o link do Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <title>Tela de Pedidos</title>
+    <title>Requisições</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f7f9fc;
+            color: #2c3e50;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            background-color: #34495e;
+            color: #ecf0f1;
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar button {
+            background: none;
+            border: none;
+            color: inherit;
+            padding: 15px 20px;
+            text-align: left;
+            font-size: 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #3d566e;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar button:hover {
+            background-color: #3d566e;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+            background-color: transparent;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .background-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .background-image iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .popup {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .popup textarea {
+            width: 100%;
+            height: 100px;
+            margin-top: 10px;
+            border: 1px solid #dcdfe3;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 14px;
+            resize: none;
+        }
+
+        .status {
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        .yellow { color: #f1c40f; }
+        .green { color: #2ecc71; }
+        .red { color: #e74c3c; }
+
+        .button-primary {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .button-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .dropdown {
+            margin-top: 20px;
+        }
+
+        .dropdown select {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #dcdfe3;
+            border-radius: 8px;
+            background-color: #ffffff;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
+
+        h2, h3 {
+            color: #2c3e50;
+        }
+
+        button {
+            outline: none;
+        }
+
+        textarea:focus, select:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+            outline: none;
+        }
+    </style>
 </head>
 <body>
     <div class="sidebar">
-        <h2>Olá, Day!</h2>
-        <p>Barra da Tijuca 001</p>
-        <a id="btnPedidos">Pedidos</a>
-        <a href="homeprincipal.html">Página Inicial</a>
-        <a href="#">Consulte aqui o seu estoque</a>
-        <a href="#">Nota Fiscal dos pedidos gerados</a>
-        <div class="image-row">
-          <img src="logoletrabranca.png" alt="Imagem 1">
+        <button onclick="openPopup('novaRequisicaoPopup')">Nova Requisição</button>
+        <button onclick="openPopup('consultaRequisicaoPopup')">Consulte Aqui sua Requisição</button>
+        <button onclick="openPopup('statusRequisicaoPopup')">Status da Requisição</button>
+        <button onclick="window.location.reload()">Sair</button>
+    </div>
+
+    <div class="content">
+        <div class="background-image">
+            <iframe loading="lazy" src="https://www.canva.com/design/DAGc4XzY-HE/49D-bPq0P1Mq3j-KyhxZVw/view?embed" allowfullscreen="allowfullscreen" allow="fullscreen"></iframe>
+        </div>
+        <div id="novaRequisicaoPopup" class="popup">
+            <h2>Qual o seu setor?</h2>
+            <div class="dropdown">
+                <select id="setorInicialSelect" onchange="handleSetorInicialChange()">
+                    <option value="">Selecione o setor...</option>
+                    <option value="Setor 1">Setor 1</option>
+                    <option value="Setor 2">Setor 2</option>
+                    <option value="Setor 3">Setor 3</option>
+                </select>
+            </div>
+            <div id="tipoRequisicao" style="display:none; margin-top: 10px;">
+                <h3>Selecione o tipo de solicitação:</h3>
+                <div class="dropdown">
+                    <select id="tipoRequisicaoSelect" onchange="handleTipoRequisicaoChange()">
+                        <option value="">Selecione...</option>
+                        <option value="Produto">Produto</option>
+                        <option value="Servico">Serviço</option>
+                    </select>
+                </div>
+            </div>
+            <div id="produtoForm" style="display:none;">
+                <textarea id="produtoDescricao" placeholder="Descreva os produtos necessários"></textarea>
+                <button class="button-primary" onclick="enviarRequisicao('Produto')">Enviar Requisição</button>
+            </div>
+            <div id="servicoForm" style="display:none;">
+                <div class="dropdown">
+                    <select id="servicoSelect">
+                        <option value="">Selecione...</option>
+                        <option value="Elétrica">Elétrica</option>
+                        <option value="Mecânico">Mecânico</option>
+                        <option value="Alvenaria">Alvenaria</option>
+                        <option value="Hidráulico">Hidráulico</option>
+                        <option value="Pintura">Pintura</option>
+                        <option value="Jardinagem e Paisagismo">Jardinagem e Paisagismo</option>
+                        <option value="Limpeza e Conservação">Limpeza e Conservação</option>
+                        <option value="Mobiliário">Mobiliário</option>
+                    </select>
+                </div>
+                <textarea id="servicoDescricao" placeholder="Descreva o serviço necessário"></textarea>
+                <button class="button-primary" onclick="enviarRequisicao('Serviço')">Enviar Requisição</button>
+            </div>
+        </div>
+
+        <div id="consultaRequisicaoPopup" class="popup">
+            <h2>Aqui está seu histórico de solicitação:</h2>
+            <div id="historico"></div>
+        </div>
+
+        <div id="statusRequisicaoPopup" class="popup">
+            <h2>Confira o andamento da sua solicitação:</h2>
+            <div id="status"></div>
         </div>
     </div>
 
-    <main>
-        <h1>Sistema de Pedidos</h1>
-        <p>Bem-vindo ao sistema de pedidos Rota Vendas. Aqui você pode gerenciar suas compras e conferir seu estoque.</p>
-        
-        <!-- Menu Dinâmico -->
-        <div class="top-menu" id="menuBar">
-            <button onclick="showItems('category1')">adulto</button>
-            <button onclick="showItems('category2')">infantil</button>
-            <button onclick="showItems('category3')">calçados</button>
-        </div>
-
-        <!-- Itens Dinâmicos -->
-        <div class="items-container" id="itemsContainer">
-            <!-- Os itens serão carregados dinamicamente aqui -->
-        </div>
-
-        <!-- Carrinho de Compras -->
-        <div class="cart" id="cart">
-            <h3>Seu Carrinho:</h3>
-            <ul class="cart-items" id="cartItems">
-                <!-- Itens adicionados aparecerão aqui -->
-            </ul>
-        </div>
-    </main>
+    <div class="overlay" id="overlay"></div>
 
     <script>
-        const items = {
-            category1: [
-                { name: 'peça 1A', image: '/homeprincipal/logins/homecliente/produto.png' },
-                { name: 'peça 1B', image: '/homeprincipal/logins/homecliente/produto.png' },
-                { name: 'peça 1C', image: '/homeprincipal/logins/homecliente/produto.png' },
-                { name: 'peça 1D', image: '/homeprincipal/logins/homecliente/produto.png' }
-            ],
-            category2: [
-                { name: 'peça 2A', image: '/homeprincipal/logins/homecliente/produto.png' },
-                { name: 'peça 2B', image: '/homeprincipal/logins/homecliente/produto.png' },
-                { name: 'peça 2C', image: '/homeprincipal/logins/homecliente/produto.png' },
-                { name: 'peça 2D', image: '/homeprincipal/logins/homecliente/produto.png' },
-            ],
-            category3: [
-                { name: 'Item 3A', image: '/homeprincipal/logins/homecliente/produto.png' },
-                { name: 'Item 3B', image: '/homeprincipal/logins/homecliente/produto.png' },
-                { name: 'Item 3C', image: '/homeprincipal/logins/homecliente/produto.png' },
-                { name: 'Item 3D', image: '/homeprincipal/logins/homecliente/produto.png' }
-            ]
-        };
+        const requisicoes = [];
 
-        const cart = [];
+        function openPopup(popupId) {
+            document.querySelectorAll('.popup').forEach(popup => popup.style.display = 'none');
+            document.getElementById(popupId).style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
 
-        document.getElementById('btnPedidos').addEventListener('click', () => {
-            const menuBar = document.getElementById('menuBar');
-            menuBar.style.display = menuBar.style.display === 'none' || menuBar.style.display === '' ? 'block' : 'none';
+            // Chama a função renderStatus() se o popup de status for aberto
+            if (popupId === 'statusRequisicaoPopup') {
+                renderStatus();
+            }
+        }
+
+        document.getElementById('overlay').addEventListener('click', () => {
+            document.querySelectorAll('.popup').forEach(popup => popup.style.display = 'none');
+            document.getElementById('overlay').style.display = 'none';
         });
 
-        function showItems(category) {
-            const itemsContainer = document.getElementById('itemsContainer');
-            itemsContainer.innerHTML = ''; // Limpa os itens existentes
-            items[category].forEach(item => {
-                const itemDiv = document.createElement('div');
-                itemDiv.classList.add('item');
-
-                const img = document.createElement('img');
-                img.src = item.image;
-
-                const name = document.createElement('p');
-                name.textContent = item.name;
-
-                const button = document.createElement('button');
-                button.textContent = 'Adicionar ao Carrinho';
-                button.onclick = () => addToCart(item);
-
-                itemDiv.appendChild(img);
-                itemDiv.appendChild(name);
-                itemDiv.appendChild(button);
-
-                itemsContainer.appendChild(itemDiv);
-            });
-            itemsContainer.style.display = 'flex';
+        function handleSetorInicialChange() {
+            const setor = document.getElementById('setorInicialSelect').value;
+            const tipoRequisicaoDiv = document.getElementById('tipoRequisicao');
+            if (setor) {
+                tipoRequisicaoDiv.style.display = 'block';
+            } else {
+                tipoRequisicaoDiv.style.display = 'none';
+                resetForms();
+            }
         }
 
-        function addToCart(item) {
-            cart.push(item);
-            const cartItems = document.getElementById('cartItems');
-
-            // Criar um novo item da lista
-            const li = document.createElement('li');
-            li.textContent = item.name;
-
-            // Criar o ícone de excluir
-            const removeButton = document.createElement('i');
-            removeButton.className = 'fa fa-trash-o';
-            removeButton.style.marginLeft = '10px';
-            removeButton.style.cursor = 'pointer';
-            removeButton.onclick = () => {
-                removeFromCart(item, li);
-            };
-
-            // Adicionar o ícone ao item da lista
-            li.appendChild(removeButton);
-
-            // Adicionar o item ao carrinho
-            cartItems.appendChild(li);
+        function handleTipoRequisicaoChange() {
+            const tipo = document.getElementById('tipoRequisicaoSelect').value;
+            document.getElementById('produtoForm').style.display = tipo === 'Produto' ? 'block' : 'none';
+            document.getElementById('servicoForm').style.display = tipo === 'Servico' ? 'block' : 'none';
         }
 
-        function removeFromCart(item, listItem) {
-            // Remover o item do array do carrinho
-            const index = cart.indexOf(item);
-            if (index > -1) {
-                cart.splice(index, 1);
+        function resetForms() {
+            document.getElementById('tipoRequisicaoSelect').value = '';
+            document.getElementById('produtoForm').style.display = 'none';
+            document.getElementById('servicoForm').style.display = 'none';
+        }
+
+        function gerarIdRequisicao() {
+            return Math.floor(10000 + Math.random() * 90000);
+        }
+
+        function enviarRequisicao(tipo) {
+            const id = gerarIdRequisicao();
+            let descricao;
+
+            if (tipo === 'Produto') {
+                descricao = document.getElementById('produtoDescricao').value;
+            } else if (tipo === 'Serviço') {
+                descricao = `${document.getElementById('servicoSelect').value}: ${document.getElementById('servicoDescricao').value}`;
             }
 
-            // Remover o elemento da lista do DOM
-            listItem.remove();
+            requisicoes.push({ id, descricao, status: 'em andamento' });
+            alert(`Requisição enviada! Número: ${id}`);
+            openPopup('consultaRequisicaoPopup');
+            renderHistorico();
+        }
+
+        function renderHistorico() {
+            const historico = document.getElementById('historico');
+            historico.innerHTML = '';
+            requisicoes.forEach(req => {
+                const btn = document.createElement('button');
+                btn.innerText = req.id;
+                btn.onclick = () => {
+                    const descricao = document.createElement('p');
+                    descricao.innerText = req.descricao;
+                    historico.appendChild(descricao);
+                };
+                historico.appendChild(btn);
+            });
+        }
+
+        function renderStatus() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = '';
+            requisicoes.forEach(req => {
+                const statusText = document.createElement('p');
+                statusText.innerHTML = `${req.id}: <span class="status ${req.status === 'em andamento' ? 'yellow' : req.status === 'concluído' ? 'green' : 'red'}">${req.status}</span>`;
+                statusDiv.appendChild(statusText);
+            });
         }
     </script>
 </body>
 </html>
+
 
