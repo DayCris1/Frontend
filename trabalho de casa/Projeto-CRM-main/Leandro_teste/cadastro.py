@@ -1,7 +1,5 @@
 import requests
 import json
-from validate_docbr import CPF
-from validate_docbr import CNPJ  # Corrigido para CNPJ
 
 print('Olá, Seja Bem-vindo!')
 
